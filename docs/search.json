@@ -1,19 +1,5 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "About Me",
-    "section": "",
-    "text": "I am an Islands and Sustainability Erasmus Mundus Master’s Graduate, with experience in both qualitative and quantitative research methods. My specialisms include high-resolution remote sensing, statistical modelling in R, sustainable infrastructure, and community-based tourism. My education includes a BA in International Relations and Politics from the University of Sheffield, with international experience at the University of Mannheim, and an MSc in Spatial Sciences (Islands and Sustainability) completed as part of an Erasmus Mundus Scholarship at the University of Groningen and the University of Las Palmas de Gran Canaria.\nI have experience working in research institutes like ECOAQUA in Gran Canaria and the Population Research Centre in Groningen. Proficient in R, Python, ArcGIS, and QGIS, many of my projects revolve around geospatial analysis. Outside work, I enjoy hiking, camping, and LGBTQ+ activism.\n\n\n\n\n\n\n\nThis website is for hosting my personal projects and hobbiest creations. Some of which are related to the TidyTuesday initiative of weekly data analysis projects (Hughes 2023; Community 2024)."
-  },
-  {
-    "objectID": "index.html#projects",
-    "href": "index.html#projects",
-    "title": "About Me",
-    "section": "",
-    "text": "This website is for hosting my personal projects and hobbiest creations. Some of which are related to the TidyTuesday initiative of weekly data analysis projects (Hughes 2023; Community 2024)."
-  },
-  {
     "objectID": "tidytuesday/2024_w30/2024_w30.html#packages-and-data",
     "href": "tidytuesday/2024_w30/2024_w30.html#packages-and-data",
     "title": "American Idol Birthplaces Heatmap",
@@ -32,7 +18,7 @@
     "href": "tidytuesday/2024_w30/2024_w30.html#converting-to-spatial-data",
     "title": "American Idol Birthplaces Heatmap",
     "section": "Converting to Spatial Data",
-    "text": "Converting to Spatial Data\n\n# find cords from each birthplace\nfinalists_with_coords = finalists_tbl %&gt;%\n  geocode(Birthplace, method = \"osm\", lat = latitude, long = longitude)\n\nPassing 164 addresses to the Nominatim single address geocoder\n\n\nQuery completed in: 164.7 seconds\n\n# create sf from coords\nfinalists_sf = finalists_with_coords %&gt;% \n  st_as_sf(coords = c(\"longitude\", \"latitude\"),\n           crs = 4326) %&gt;% \n  select(\"Contestant\",\n         \"Birthplace\",\n         \"Season\")"
+    "text": "Converting to Spatial Data\n\n# find cords from each birthplace\nfinalists_with_coords = finalists_tbl %&gt;%\n  geocode(Birthplace, method = \"osm\", lat = latitude, long = longitude)\n\nPassing 164 addresses to the Nominatim single address geocoder\n\n\nQuery completed in: 165.5 seconds\n\n# create sf from coords\nfinalists_sf = finalists_with_coords %&gt;% \n  st_as_sf(coords = c(\"longitude\", \"latitude\"),\n           crs = 4326) %&gt;% \n  select(\"Contestant\",\n         \"Birthplace\",\n         \"Season\")"
   },
   {
     "objectID": "tidytuesday/2024_w30/2024_w30.html#interactive-map",
@@ -54,5 +40,19 @@
     "title": "American Idol Birthplaces Heatmap",
     "section": "Plotting Heat Map Raster",
     "text": "Plotting Heat Map Raster\n\ntmap_mode(\"plot\")\n\ntmap mode set to plotting\n\n# plot\ntm_shape(cont_sf) +\n  tm_borders(col = \"red\", alpha = 0.4, lwd = 2) +\n  tm_shape(finalists_heat) +\n  tm_raster(style = \"cont\", palette = \"plasma\",\n            title = \"Value\", alpha = 0.8) +\n  tm_shape(finalists_sf) +\n  tm_symbols(shape = 4, col = \"white\",\n             size = 0.5, alpha = 0.5) +\n  tm_layout(\n    main.title = \"American Idol: Birthplace of Finalists\",\n    main.title.position = \"left\",\n    main.title.fontface = \"bold.italic\",\n    main.title.color = \"white\",\n    main.title.size = 2,\n    legend.show = FALSE,\n    fontfamily = \"sans\",\n    bg.color = \"black\",\n    outer.bg.color = \"black\",\n    frame = FALSE) +\n  tm_credits(\"TidyTuesday, Week 30, 2024, Jody Holland\",\n             position = c(\"LEFT\", \"BOTTOM\"), col = \"white\") +\n  tm_credits(\"Continental USA Only    \", col = \"white\",\n             position = c(\"RIGHT\", \"BOTTOM\"))"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "About Me",
+    "section": "",
+    "text": "I am an Islands and Sustainability Erasmus Mundus Master’s Graduate, with experience in both qualitative and quantitative research methods. My specialisms include high-resolution remote sensing, statistical modelling in R, sustainable infrastructure, and community-based tourism. My education includes a BA in International Relations and Politics from the University of Sheffield, with international experience at the University of Mannheim, and an MSc in Spatial Sciences (Islands and Sustainability) completed as part of an Erasmus Mundus Scholarship at the University of Groningen and the University of Las Palmas de Gran Canaria.\nI have experience working in research institutes like ECOAQUA in Gran Canaria and the Population Research Centre in Groningen. Proficient in R, Python, ArcGIS, and QGIS, many of my projects revolve around geospatial analysis. Outside work, I enjoy hiking, camping, and LGBTQ+ activism.\n\n\n\n\n\n\n\nThis website is for hosting my personal projects and hobbiest creations. Some of which are related to the TidyTuesday initiative of weekly data analysis projects (Hughes 2023; Community 2024)."
+  },
+  {
+    "objectID": "index.html#projects",
+    "href": "index.html#projects",
+    "title": "About Me",
+    "section": "",
+    "text": "This website is for hosting my personal projects and hobbiest creations. Some of which are related to the TidyTuesday initiative of weekly data analysis projects (Hughes 2023; Community 2024)."
   }
 ]

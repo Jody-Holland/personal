@@ -1,5 +1,6 @@
 project:
   type: website
+  output-dir: docs
 
 website:
   title: "JH"
@@ -11,11 +12,11 @@ website:
         menu:
           - text: 2024, Week 30, American Idol
             href: tidytuesday/2024_w30/2024_w30.qmd
-
+            
 format:
   html:
-    theme: bootswatch  # Change this to any Bootswatch theme you prefer
-
+    theme: bootswatch 
+    
 editor: visual
 
 
