@@ -1,0 +1,21 @@
+project:
+  type: website
+
+website:
+  title: "JH"
+  navbar:
+    left:
+      - href: index.qmd
+        text: About
+      - text: TidyTuesday
+        menu:
+          - text: 2024, Week 30, American Idol
+            href: tidytuesday/2024_w30/2024_w30.qmd
+
+format:
+  html:
+    theme: bootswatch  # Change this to any Bootswatch theme you prefer
+
+editor: visual
+
+
