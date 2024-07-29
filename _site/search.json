@@ -12,5 +12,47 @@
     "title": "About Me",
     "section": "",
     "text": "This website is for hosting my personal projects and hobbiest creations. Some of which are related to the TidyTuesday initiative of weekly data analysis projects (Hughes 2023; Community 2024)."
+  },
+  {
+    "objectID": "tidytuesday/2024_w30/2024_w30.html#packages-and-data",
+    "href": "tidytuesday/2024_w30/2024_w30.html#packages-and-data",
+    "title": "American Idol Birthplaces Heatmap",
+    "section": "Packages and Data",
+    "text": "Packages and Data\n\n# load packages\nlibrary(tidyverse)\nlibrary(tidytuesdayR)\nlibrary(sf)\nlibrary(tidygeocoder)\nlibrary(tmap)\nlibrary(maps)\nlibrary(terra)\nlibrary(extrafont)\n\n# load tt data\nfinalists_tbl = read.csv(\"finalists.csv\") %&gt;% as_tibble()\n\n# load map of continental us data\ncont_map = map(\"state\", plot = FALSE, fill = TRUE)"
+  },
+  {
+    "objectID": "tidytuesday/2024_w30/2024_w30.html#data-wrangling",
+    "href": "tidytuesday/2024_w30/2024_w30.html#data-wrangling",
+    "title": "American Idol Birthplaces Heatmap",
+    "section": "Data Wrangling",
+    "text": "Data Wrangling\n\n# create tbl from finalists and fix string errors\nfinalists_tbl$Contestant[55] = \"José 'Sway' Penala\"\nfinalists_tbl$Contestant[190] = \"Uché\"\n\n# fill in missing and false data\n# create tbl of missing data\nmissing_tbl = tibble(\n  Contestant = c(\"Curtis Finch, Jr.\", \n                 \"Devin Velez\",\n                 \"Burnell Taylor\",\n                 \"Stevie Scott\",\n                 \"Jennifer Hudson\",\n                 \"Amber Holcomb\",\n                 \"José 'Sway' Penala\"),\n  Birthplace = c(\"St. Louis, Missouri\", \n                 \"Chicago, Illinois\",\n                 \"New Orleans, Louisiana\",\n                 \"Sacramento, California\", \n                 \"Chicago, Illinois\", \n                 \"Houston, Texas\",\n                 \"San Francisco, California\"))\n\n# merge missing data and fix birthplace\nfinalists_tbl = finalists_tbl %&gt;%\n  left_join(missing_tbl, by = \"Contestant\") %&gt;%\n  mutate(Birthplace = ifelse(!is.na(Birthplace.y), \n                             Birthplace.y, Birthplace.x)) %&gt;%\n  select(-Birthplace.x, -Birthplace.y)"
+  },
+  {
+    "objectID": "tidytuesday/2024_w30/2024_w30.html#converting-to-spatial-data",
+    "href": "tidytuesday/2024_w30/2024_w30.html#converting-to-spatial-data",
+    "title": "American Idol Birthplaces Heatmap",
+    "section": "Converting to Spatial Data",
+    "text": "Converting to Spatial Data\n\n# find cords from each birthplace\nfinalists_with_coords = finalists_tbl %&gt;%\n  geocode(Birthplace, method = \"osm\", lat = latitude, long = longitude)\n\nPassing 164 addresses to the Nominatim single address geocoder\n\n\nQuery completed in: 164.7 seconds\n\n# create sf from coords\nfinalists_sf = finalists_with_coords %&gt;% \n  st_as_sf(coords = c(\"longitude\", \"latitude\"),\n           crs = 4326) %&gt;% \n  select(\"Contestant\",\n         \"Birthplace\",\n         \"Season\")"
+  },
+  {
+    "objectID": "tidytuesday/2024_w30/2024_w30.html#interactive-map",
+    "href": "tidytuesday/2024_w30/2024_w30.html#interactive-map",
+    "title": "American Idol Birthplaces Heatmap",
+    "section": "Interactive Map",
+    "text": "Interactive Map\n\n# ensure the Season column is correctly formatted\nfinalists_sf$Season = as.character(finalists_sf$Season)\nfinalists_sf$Season = paste(\"Season\", finalists_sf$Season)\n\n# ensure the Season column is a factor with the correct ordering (alphabetic causes errors)\nfinalists_sf$Season = factor(finalists_sf$Season,\n                              levels = paste(\"Season\", sort(unique(as.numeric(gsub(\"Season \", \"\", finalists_sf$Season))))))\ntmap_mode(\"view\")\ntm_shape(finalists_sf) +\n  tm_dots(col = \"Season\", palette = \"viridis\", size = 0.5,\n          popup.vars = c(\"Contestant\",\n                         \"Birthplace\",\n                         \"Season\")) +\n  tm_layout(legend.title.size = 1,\n            legend.text.size = 0.8,\n            legend.outside = TRUE,\n            legend.outside.position = \"right\")"
+  },
+  {
+    "objectID": "tidytuesday/2024_w30/2024_w30.html#making-heat-map-raster",
+    "href": "tidytuesday/2024_w30/2024_w30.html#making-heat-map-raster",
+    "title": "American Idol Birthplaces Heatmap",
+    "section": "Making Heat Map Raster",
+    "text": "Making Heat Map Raster\n\n# disable s2 for spatial operations\nsf_use_s2(FALSE)\n\n# get the map of the continental usa and convert to sf object\ncont_map = map(\"state\", plot = FALSE, fill = TRUE)\ncont_sf = st_as_sf(cont_map)\ncont_sf = st_transform(cont_sf, crs = st_crs(finalists_sf))\ncont_sf = st_make_valid(cont_sf)\n\n# convert to spatvector\ncont_vect = vect(cont_sf)\n\n# filter finalists data using the continental map\nfinalists_cont_sf = st_intersection(finalists_sf, cont_sf)\n\nWarning: attribute variables are assumed to be spatially constant throughout\nall geometries\n\n# convert to spatvector\nfinalists_cont_vect = vect(finalists_cont_sf)\n\n# create a raster template\nfinalists_template = rast(ext(cont_vect),\n                           resolution = 0.1, \n                           crs = crs(cont_vect))\n\n# rasterize the points to create a density raster\nfinalists_mask = rasterize(finalists_cont_vect, finalists_template, 1, background=NA)\n\n# create a gaussian kernel for smoothing\nfinalists_kernel = focalMat(finalists_mask, 2, \"Gauss\")\n\n# apply the kernel to the raster to create a heatmap\nfinalists_heat = focal(finalists_mask, w = finalists_kernel, \n                      fun = sum, na.rm = TRUE)\nfinalists_heat[is.na(finalists_heat)] = 0\n\n# mask the heatmap with the continental USA map and scale the values\nfinalists_heat = finalists_heat %&gt;%\n  mask(cont_vect) %&gt;%\n  scale()"
+  },
+  {
+    "objectID": "tidytuesday/2024_w30/2024_w30.html#plotting-heat-map-raster",
+    "href": "tidytuesday/2024_w30/2024_w30.html#plotting-heat-map-raster",
+    "title": "American Idol Birthplaces Heatmap",
+    "section": "Plotting Heat Map Raster",
+    "text": "Plotting Heat Map Raster\n\ntmap_mode(\"plot\")\n\ntmap mode set to plotting\n\n# plot\ntm_shape(cont_sf) +\n  tm_borders(col = \"red\", alpha = 0.4, lwd = 2) +\n  tm_shape(finalists_heat) +\n  tm_raster(style = \"cont\", palette = \"plasma\",\n            title = \"Value\", alpha = 0.8) +\n  tm_shape(finalists_sf) +\n  tm_symbols(shape = 4, col = \"white\",\n             size = 0.5, alpha = 0.5) +\n  tm_layout(\n    main.title = \"American Idol: Birthplace of Finalists\",\n    main.title.position = \"left\",\n    main.title.fontface = \"bold.italic\",\n    main.title.color = \"white\",\n    main.title.size = 2,\n    legend.show = FALSE,\n    fontfamily = \"sans\",\n    bg.color = \"black\",\n    outer.bg.color = \"black\",\n    frame = FALSE) +\n  tm_credits(\"TidyTuesday, Week 30, 2024, Jody Holland\",\n             position = c(\"LEFT\", \"BOTTOM\"), col = \"white\") +\n  tm_credits(\"Continental USA Only    \", col = \"white\",\n             position = c(\"RIGHT\", \"BOTTOM\"))"
   }
 ]
